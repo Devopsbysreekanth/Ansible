@@ -61,7 +61,7 @@
 
   - name: daemon_reload
     ansible.builtin.systemd:
-    daemon_reload: true
+      daemon_reload: true
 
   - name: Copy file with owner and permissions
     ansible.builtin.copy:
