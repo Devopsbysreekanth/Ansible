@@ -6,3 +6,24 @@ catlouge.devopsbysreekanth.online
 
 [web]
 web.devopsbysreekanth.online
+
+[redis]
+redis.devopsbysreekanth.online
+
+[user]
+user.devopsbysreekanth.online
+
+[cart]
+cart.devopsbysreekanth.online
+
+[mysql]
+mysql.devopsbysreekanth.online
+
+[shipping]
+shipping.devopsbysreekanth.online
+
+[rabbitmq]
+rabbitmq.devopsbysreekanth.online
+
+[payment]
+payment.devopsbysreekanth.online

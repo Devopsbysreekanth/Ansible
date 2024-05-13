@@ -1,0 +1,71 @@
+- name: Cart service 
+  hosts: cart
+  become: yes
+  tasks: 
+  - name: Setup NodeJS repos
+    ansible.builtin.bash: curl -sL https://rpm.nodesource.com/setup_lts.x | bash
+
+  - name: install nodejs
+    ansible.builtin.yum:
+      name: nodejs
+      state: installed
+  
+  - name: check user exist or not
+    ansible.builtin.command: id roboshop
+    register: out
+    ignore_errors: true
+
+  - when: out.rc !=0
+    name: create user 
+    become: yes
+    ansible.builtin.user: 
+      name: roboshop
+  
+  - name: check dir exist or not
+    ansible.builtin.stat:
+    path: /app
+  register: directory
+
+  - name: print the directory stats
+    ansible.builtin.debug:
+      msg: "output: {{directory}}"
+
+  - when: directory.stat.exists == False
+    name: create dir
+    ansible.builtin.file:
+      path: /app
+      state: directory
+  
+  - name: Downloading zip
+    ansible.builtin.get_url:
+      url: curl -L -o /tmp/cart.zip https://roboshop-builds.s3.amazonaws.com/cart.zip
+      dest: /tmp
+
+  - name: unzip roboshop
+    ansible.builtin.unarchive:
+      src: /tmp/cart.zip
+      dest: /app
+      remote_src: yes
+
+  - name: install packages
+    ansible.builtin.command: npm install
+    args: 
+      chdir: /app
+
+  - name: Copy file with owner and permissions
+    ansible.builtin.copy:
+      src: cart.service
+      dest: /etc/systemd/system/cart.service
+
+  - name: Restart service cron on centos, in all cases, also issue daemon-reload to pick up config changes
+    ansible.builtin.systemd:
+      daemon_reload: true
+
+  - name: restart cart
+    ansible.builtin.service:
+      name: cart
+      state: restarted
+      enabled: yes
+
+
+  
