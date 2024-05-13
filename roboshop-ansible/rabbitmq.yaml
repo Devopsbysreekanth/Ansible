@@ -1,7 +1,7 @@
 - name: Config Rabbitmq msg queue
   hosts: rabbitmq
   become: yes
-   tasks:
+  tasks:
   - name: configure rabbitmq yum repos
     ansible.builtin.shell: "{{item}}"
     loop:
