@@ -1,55 +1,49 @@
-- name: install payment
-  host: payment
+- name: Install Payment
+  hosts: payment
   become: yes
-  tasks: 
-  - name: insall pyhton
+  tasks:
+  - name: Install Python
     ansible.builtin.yum:
-    name: "{item}"
-    state: installed
+      name: "{{item}}"
+      state: installed
     loop:
-    - python36 
-    - gcc 
+    - python36
+    - gcc
     - python3-devel
 
-  - name: check user exist or not
+  - name: check roboshop user exist or not
     ansible.builtin.command: id roboshop
-    register: out
+    register: out #output is variable name
     ignore_errors: true
 
-  - when: out.rc !=0
-    name: create user 
-    become: yes
-    ansible.builtin.user: 
+  - when: out.rc != 0
+    name: create user roboshop
+    become: yes # we need sudo access for this task only
+    ansible.builtin.user:
       name: roboshop
-  
-  - name: check dir exist or not
+
+  - name: check /app directory exists or not
     ansible.builtin.stat:
-    path: /app
-  register: directory
+      path: /app
+    register: directory
 
   - name: print the directory stats
     ansible.builtin.debug:
       msg: "output: {{directory}}"
 
   - when: directory.stat.exists == False
-    name: create dir
+    name: create /app directory
     ansible.builtin.file:
       path: /app
       state: directory
 
-  - name: Downloading zip
-    ansible.builtin.get_url:
-      url: curl -L -o /tmp/payment.zip https://roboshop-builds.s3.amazonaws.com/payment.zip
-      dest: /tmp
-
-  - name: unzip roboshop
+  - name: Download payment and extract
     ansible.builtin.unarchive:
-      src: /tmp/payment.zip
+      src: https://roboshop-builds.s3.amazonaws.com/payment.zip
       dest: /app
       remote_src: yes
 
-
-  - name: install dependencies
+  - name: Install dependencies
     ansible.builtin.command: pip3.6 install -r requirements.txt
     args:
       chdir: /app
@@ -68,4 +62,5 @@
       name: payment
       state: restarted
       enabled: true
- 
+
+  
