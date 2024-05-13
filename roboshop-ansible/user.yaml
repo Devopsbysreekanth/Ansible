@@ -50,9 +50,9 @@
 
 
   - name: installing package to specific dir
-    ansible.builtin.command: npm install 
-      args:
-        chdir: /app
+    ansible.builtin.command: npm install
+    args:
+      chdir: /app
 
   - name: Copy file with owner and permissions
     ansible.builtin.copy:
