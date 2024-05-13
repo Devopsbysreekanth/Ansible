@@ -1,74 +1,72 @@
-- name: user repo
+- name: Install user component
   hosts: user
   become: yes
   tasks:
-  - name: Setup NodeJS repos for user
-    ansible.builtin.shell: curl -sL https://rpm.nodesource.com/setup_lts.x | bash
+  - name: setup NPM source
+    ansible.builtin.shell: "curl -sL https://rpm.nodesource.com/setup_lts.x | bash"
 
-  - name: install nodejs
+  - name: Install NodeJS
     ansible.builtin.yum:
       name: nodejs
       state: installed
 
-  - name: check roboshop user use exist or not
+  - name: check roboshop user exist or not
     ansible.builtin.command: id roboshop
-    register: out
+    register: out #output is variable name
     ignore_errors: true
 
-  - when: out.rc !=0
+  - when: out.rc != 0
     name: create user roboshop
-    become: yes
-    ansible.builtin.user: 
+    become: yes # we need sudo access for this task only
+    ansible.builtin.user:
       name: roboshop
 
-
-  - name: check dir exist or not
+  - name: check /app directory exists or not
     ansible.builtin.stat:
       path: /app
-      register: directory
+    register: directory
 
-  - name: print directory stat
-    ansible.builtin.debug: 
+  - name: print the directory stats
+    ansible.builtin.debug:
       msg: "output: {{directory}}"
 
   - when: directory.stat.exists == False
-    name: create dir
+    name: create /app directory
     ansible.builtin.file:
       path: /app
       state: directory
 
-  - name: Downloading zip
+  - name: download user artifact
     ansible.builtin.get_url:
-      url: curl -L -o /tmp/user.zip https://roboshop-builds.s3.amazonaws.com/user.zip
+      url: https://roboshop-builds.s3.amazonaws.com/user.zip
       dest: /tmp
 
-  - name: unzip roboshop
+  - name: extract user artifact
     ansible.builtin.unarchive:
-      src: /tmp/cart.zip
+      src: /tmp/user.zip
       dest: /app
       remote_src: yes
 
-
-  - name: installing package to specific dir
+  - name: install dependencies
     ansible.builtin.command: npm install
     args:
       chdir: /app
 
-  - name: Copy file with owner and permissions
+  - name: copy user service
     ansible.builtin.copy:
       src: user.service
-      dest: vim /etc/systemd/system/user.service
+      dest: /etc/systemd/system/user.service
 
-  - name: daemon_reload
+  - name: deamon reload
     ansible.builtin.systemd:
       daemon_reload: true
 
-  - name: Copy file with owner and permissions
+  - name: copy mongo repo to yum.repos.d
     ansible.builtin.copy:
-      src: mongo.repo
+      src: mongodb.repo
       dest: /etc/yum.repos.d/mongo.repo
 
-  - name: install mongodb
+  - name: Install MongoDB
     ansible.builtin.yum:
       name: mongodb-org-shell
       state: installed
