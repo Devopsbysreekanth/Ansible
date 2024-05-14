@@ -1,0 +1,5 @@
+CATALOGUE_HOST: catalogue.devopsbysreekanth
+USER_HOST: user.devopsbysreekanth.online
+SHIPPING_HOST: shipping.devopsbysreekanth.online
+CART_HOST: cart.devopsbysreekanth.online
+PAYMENT_HOST: payment.devopsbysreekanth.online
